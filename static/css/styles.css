@@ -1,0 +1,378 @@
+/*body {
+	background-color: #161618;
+}
+*/
+.node text { 
+	color : white;
+	background-color: white;
+ }
+
+.customform-inline{
+padding:15px;
+}
+.customform-inline .btn-success{
+margin-left:5px;
+}
+
+.v-menu__content{left:25px!important}
+.v-toolbar__title{color:#fff;}
+
+.column_wrapper {
+    max-height: auto;
+    display: flex;
+    flex-flow: wrap;
+	
+	border: 1px solid #ccc;
+    margin-bottom: 15px;
+    padding: 0px 15px;
+    box-shadow: 4px 4px 4px #ccc;
+    border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+.customheadingFilter{
+	width:100%;
+	font-size: 22px;
+    text-transform: capitalize;
+	margin-bottom: 0;
+	border-top: 1px solid #ccc;
+    padding-top: 20px;
+	margin-top:0px;
+}
+.customfilteOptionarea{
+	width:150px;
+}
+.v-expansion-panel-content__wrap{
+	padding-top:10px;
+}
+
+.customfilteOptionarea .v-input__slot, .customfilteOptionarea .v-label{
+	margin-bottom:0;
+}
+.customfilteOptionarea .v-label{
+font-size:14px;
+}
+
+.customheadingFilter:first-child{
+border:0;
+}
+
+.node {}
+.link { stroke: #999; stroke-width: 2px; pointer-events: all;}
+.node circle {
+	pointer-events: all;
+	stroke: #777;
+	stroke-width: 1px;
+  }
+
+  div.tooltip {
+    position: absolute;
+    background-color: white;
+    max-width; 200px;
+    height: auto;
+    padding: 1px;
+    border-style: solid;
+    border-radius: 4px;
+    border-width: 1px;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, .5);
+    pointer-events: none;
+  }
+
+.heighLightStroke{stroke: #000; stroke-opacity: 1; stroke-width: 1px;  transition: stroke 4s;}
+
+.CustomhomeBtn{
+position: absolute;
+z-index: 9999;
+top: -50px;
+right: 15px;
+}
+
+.customPanelbox-wrapper{
+    padding: 10px;
+}
+.customPanelbox{
+display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-width: 100%;
+    height: auto;
+	padding: 10px;
+}
+
+#page-wrap {
+	  margin: 50px;
+    }
+    p {
+	 margin: 20px 0; 
+    }
+
+	/* 
+	Generic Styling, for Desktops/Laptops 
+	*/
+	table { 
+		width: 100%; 
+		border-collapse: collapse; 
+	}
+	/* Zebra striping */
+	tr:nth-of-type(odd) { 
+		/*background: #333; */
+	}
+	th { 
+		background: #333; 
+		color: white; 
+		font-weight: bold; 
+		cursor: s-resize;
+		background-repeat: no-repeat;
+        background-position: 3% center;
+	}
+	td, th { 
+		padding: 6px; 
+		border: 1px solid #ccc; 
+		text-align: left; 
+	}
+	
+	th.des:after {
+      content: "\21E9";
+    }
+    
+    th.aes:after {
+      content: "\21E7";
+    }
+	
+	/* 
+	Max width before this PARTICULAR table gets nasty
+	This query will take effect for any screen smaller than 760px
+	and also iPads specifically.
+	*/
+	@media 
+	only screen and (max-width: 760px),
+	(min-device-width: 768px) and (max-device-width: 1024px)  {
+	
+		/* Force table to not be like tables anymore */
+		table, thead, tbody, th, td, tr { 
+			display: block; 
+		}
+		
+		/* Hide table headers (but not display: none;, for accessibility) */
+		thead tr { 
+			position: absolute;
+			top: -9999px;
+			left: -9999px;
+		}
+		
+		tr { border: 1px solid #ccc; }
+		
+		td { 
+			/* Behave  like a "row" */
+			border: none;
+			border-bottom: 1px solid #eee; 
+			position: relative;
+			padding-left: 50%; 
+		}
+		
+		td:before { 
+			/* Now like a table header */
+			position: absolute;
+			/* Top/left values mimic padding */
+			top: 6px;
+			left: 6px;
+			width: 45%; 
+			padding-right: 10px; 
+			white-space: nowrap;
+		}
+		
+		/*
+		Label the data
+		*/
+		td:before {
+		  content: attr(data-th) ": ";
+          font-weight: bold;
+          width: 6.5em;
+          display: inline-block;
+		}
+	}
+	
+	/* Smartphones (portrait and landscape) ----------- */
+	@media only screen
+	and (min-device-width : 320px)
+	and (max-device-width : 480px) {
+		body { 
+			padding: 0; 
+			margin: 0; 
+			width: 320px; }
+		}
+	
+	/* iPads (portrait and landscape) ----------- */
+	@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+		body { 
+			width: 495px; 
+		}
+	}
+
+
+	.customCircularButton{
+		position: absolute!important;
+			left: 50%;
+			top: 50%;
+			margin-left: -150px;
+			margin-top: -150px;
+			z-index: 999;
+		}
+
+
+	.overlayCustom{
+			position: fixed!Important;
+
+			 /*display: none;*/
+			width: 100%!Important;
+			height: 100%;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background-color: #FFF!Important;
+			z-index: 2;
+			cursor: pointer;
+	}
+
+
+	#page-wrap {
+		height: 400px;
+		overflow-y: scroll;
+	}
+
+
+	/* width */
+::-webkit-scrollbar {
+	width: 8px;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+	background: #f1f1f1;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+	background: #888;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+	background: #555;
+  }
+
+
+  .outlayerImgCustom, .decesionTreeImgCustom{
+	cursor:pointer;
+	}    
+	
+	 
+	
+	.my-legend .legend-title {
+		text-align: left;
+		margin-bottom: 5px;
+		font-weight: bold;
+		font-size: 90%;
+		}
+	  .my-legend .legend-scale ul {
+		margin: 0;
+		margin-bottom: 5px;
+		padding: 0;
+		float: left;
+		list-style: none;
+		}
+	  .my-legend .legend-scale ul li {
+		display:inline;
+		font-size: 80%;
+		list-style: none;
+		margin-left: 0;
+		line-height: 18px;
+		margin-bottom: 2px;
+		}
+	  .my-legend ul.legend-labels li .colorL{
+		display: block;
+		float: left;
+		height: 16px;
+		width: 20px;
+		margin-right: 5px;
+		margin-left: 0;
+		border: 1px solid #999;
+		}
+	   .my-legend ul.legend-labels li  .legendL {
+		display: block;
+		float: left;
+		height: 16px;
+		width: 40px;
+		margin-right: 5px;
+		margin-left: 0;
+		}
+	  
+	  .my-legend a {
+		color: #777;
+		}
+
+
+	   .defaultwos {
+		   margin: 10px;
+	   }
+		
+	   .defaultws {
+		   margin: 10px;
+		   background-color: plum;
+	   }
+
+
+.col-3-leftpanel .v-expansion-panel-content{
+    overflow: auto;
+    height: 800px;
+    padding-top: 10px;
+}
+
+ 
+
+.v-image__image--cover{
+    background-size: 100% 100%!important;
+}
+
+
+#ClearSelection {
+	margin-left: 40%;
+}
+
+
+.edgeLegends {
+	text-align: center;
+	font-weight: bold;
+}
+
+.edgeLegends span {
+	padding: 5px;
+	border: 2px solid rgb(75, 73, 73);
+}
+
+
+
+.nodeLegends {
+	text-align: center;
+	font-weight: bold;
+}
+
+
+
+.nodeLegends span {
+	padding: 5px;
+	border: 2px solid rgb(75, 73, 73);
+}
+
+.nlpara {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.pdpImages img {
+	object-fit: contain;
+}
