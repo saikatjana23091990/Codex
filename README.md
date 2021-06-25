@@ -9,3 +9,5 @@ https://github.com/swarna-kpaul/genfact
 Install Genfact from PIP.
 
 pip install genfact
+
+Copyright @ Tata Consultancy Services
