@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn import metrics, tree
 from matplotlib import pyplot
+from ordered_set import OrderedSet
 import warnings
 from sklearn.model_selection import train_test_split
 import xgboost as xgb
@@ -594,7 +595,7 @@ class Explainer:
         self.frequency_map = {}
         self.filter_dict = []
         self.local_exp = None
-
+        self.resp_var_encode_map = {}
         self.data_disp, self.labels_disp = self.data.copy(), self.labels.copy()
         self.custom_data = self.data.copy()
 
@@ -619,12 +620,17 @@ class Explainer:
         return problem_type
 
     def get_original_labels(self):
-        predictions_dict = {}
-        labels = list(set(label for label in self.labels))
-        labels_original = list(set(label for label in np.array(self.labels_disp)))
-        for i in range(len(labels)):
-            predictions_dict[labels[i]] = labels_original[i]
-        return predictions_dict
+        self.resp_var_encode_map = {}
+
+        for i, x in enumerate(self.labels):
+            if x not in self.resp_var_encode_map:
+                self.resp_var_encode_map[x] = str(self.labels_disp[i])
+
+        # labels = list(set(label for label in self.labels))
+        # labels_original = list(set(label for label in np.array(self.labels_disp)))
+        # for i in range(len(labels)):
+        #     predictions_dict[labels[i]] = labels_original[i]
+        return self.resp_var_encode_map
 
     def clean_data(self):
         drop_row_list = []
@@ -641,7 +647,19 @@ class Explainer:
             if self.format_datatypes.get(col, None) is not None:
                 datatype = self.format_datatypes.get(col)
                 if datatype == 'category':
-                    self.custom_data[col] = self.custom_data[col].astype('object')
+                    current_type = str(self.custom_data[col].dtype)
+                    print(col)
+                    print(current_type)
+                    if 'int' not in current_type and 'float' not in current_type:
+                        try:
+                            print('Explicit Conversion to OBJ')
+                            self.custom_data[col] = self.custom_data[col].astype('object')
+                            print('Explicit Conversion to OBJ -> SUCCESS')
+                        except:
+                            conversion_error.append(col)
+                    print('SPECIAL DETECTION -> Numeric Category')
+                    
+                    
                 else:
                     current_type = str(self.custom_data[col].dtype)
                     if 'int' not in current_type and 'float' not in current_type:
@@ -726,8 +744,12 @@ class Explainer:
 
         if not self.custom_class_names:
             self.custom_class_names = list(self.get_original_labels().values())
-            self.custom_class_names = [str(x) for i,x in enumerate(self.custom_class_names)]
-
+            self.custom_class_names = [str(x) for i, x in enumerate(self.custom_class_names)]
+        else:
+            ordered_labels = OrderedSet(self.labels)
+            for i, x in enumerate(ordered_labels):
+                self.resp_var_encode_map[x] = str(self.custom_class_names[i])
+        print(self.resp_var_encode_map)
         self.formatting_pass = True
 
     def advance_encode(self, encode_method='james stein', data=None, labels=None):
@@ -769,10 +791,10 @@ class Explainer:
         targetclasses_indx = data.shape[1] - 1
         original_classdata = data.iloc[:, -1].values
 
-        self.xgc = xgb.XGBClassifier(n_estimators=500, max_depth=int(self.custom_data.shape[1] * 2), base_score=0.5,
+        self.xgc = xgb.XGBClassifier(n_estimators=500, max_depth=3, base_score=0.5,
                                 objective=self.problem_type[1], random_state=42)
 
-        X_train, X_test, y_train, y_test = train_test_split(featuredata_values_only, original_classdata, test_size=0.01, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(featuredata_values_only, original_classdata, test_size=0.1, random_state=42)
         self.X_train, self.X_test, self.y_train, self.y_test = X_train, X_test, y_train, y_test
         print('Split ratio:', len(X_train), len(X_test))
 
@@ -818,12 +840,48 @@ class Explainer:
             featuredtype.append('cat')
         else:
             featuredtype.append('con')
+        featuredata.to_csv('Encoded_Data.csv',index=False)
+        print(featuredtype)
 
-        factuals, counterfactuals, factclass, cfactclass, classdistribution = \
-            gf.generate_counterfactuals(featuredata, featuredtype, targetclasses_indx, model=self.xgc)
+        THRESH = 200
 
-        X_train = np.concatenate([factuals, counterfactuals], axis=0)
-        y_train_cf = self.xgc.predict(X_train)
+        X_train=[]
+        y_train_cf=[]
+
+        if len(featuredata)<THRESH:
+            print('RUNNING MULTIPLE ITERATIONS')
+            for pp in range(4):
+                #import genfact as gf
+                print(featuredata)
+                print(featuredtype)
+                print(targetclasses_indx)
+                print('RUNNING ITERATION -> '+str(pp+1))
+                featuredtype = []
+                for col in list(self.columns):
+                    if self.format_datatypes.get(col) == 'category':
+                        featuredtype.append('cat')
+                    else:
+                        featuredtype.append('con')
+
+                if self.format_datatypes.get(self.response_var) == 'category':
+                    featuredtype.append('cat')
+                else:
+                    featuredtype.append('con')
+                factuals, counterfactuals, factclass, cfactclass, classdistribution = \
+                    gf.generate_counterfactuals(pickle.loads(pickle.dumps(featuredata,-1)), pickle.loads(pickle.dumps(featuredtype,-1)),  pickle.loads(pickle.dumps(targetclasses_indx,-1)), model=self.xgc,clustsize = 10, datafraction = 0.99)
+                foo = np.concatenate([factuals, counterfactuals], axis=0)
+                X_train.extend(foo)
+                #print(foo.shape)
+                #print(X_train[-1].shape)
+                #y_train_cf = self.xgc.predict(X_train)
+                y_train_cf.extend(np.array(list(factclass)+list(cfactclass)))
+        else:
+            factuals, counterfactuals, factclass, cfactclass, classdistribution = \
+                gf.generate_counterfactuals(pickle.loads(pickle.dumps(featuredata,-1)), pickle.loads(pickle.dumps(featuredtype,-1)),  pickle.loads(pickle.dumps(targetclasses_indx,-1)), model=self.xgc)#,clustsize = 10, datafraction = 0.99)
+
+            X_train = np.concatenate([factuals, counterfactuals], axis=0)
+            #y_train_cf = self.xgc.predict(X_train)
+            y_train_cf = np.array(list(factclass)+list(cfactclass))
 
         self.X_train_cf = pd.DataFrame(X_train, columns=self.columns)
         self.y_train_cf = y_train_cf
@@ -838,7 +896,7 @@ class Explainer:
 
         return "\n".join([str(text) for text in metrics_text])
 
-    def get_feature_scores(self, plot_size=(20, 9), plot=True, filename = None, sort=True, normalize=False):
+    def get_feature_scores(self, plot_size=(9, 9), plot=True, filename = None, sort=True, normalize=False):
         """
         Parameter:
             plot_size ( 2-tuple ) : (Optional) (default = (18,9) ) Resolution of plot image, in scale of 100.
@@ -905,7 +963,7 @@ class Explainer:
 
         return importance_data
 
-    def pdp(self, feature_var, fig_size=(16, 9), fontsize=40, labelgap=50, max_legend=6,
+    def pdp(self, feature_var, fig_size=(9, 9), fontsize=9, labelgap=5, max_legend=6,
             top_n_percent=30, peak_width_threshold=2.5, gap_threshold=5):
         """
         Parameter:
@@ -1185,22 +1243,43 @@ class Explainer:
 
         X_train = self.X_train_cf
         y_train = self.y_train_cf
+        print('\n'*3)
+        print('$'*50)
+        print(X_train.shape)
+        print(len(y_train))
+        print('$'*50)
+        print('\n'*3)
+        #X_train.to_csv('X_Train.csv',index=False)
+        
+        pd.concat([X_train,pd.Series(y_train)],axis=1).to_csv('Codex_data.csv',index=False)
 
         # creating decision tree
         if 'regression' in self.problem_type:
             surrogate_explainer = tree.DecisionTreeRegressor(max_depth=3, random_state=42, splitter='best')
+            temp_cf_original_classnames = None
         else:
             surrogate_explainer = tree.DecisionTreeClassifier(max_depth=3, random_state=42,
                                                               splitter='best')
+            temp_cf_original_classnames = OrderedSet()
+            for i, x in enumerate(y_train):
+                temp_cf_original_classnames.add(self.resp_var_encode_map.get(x, str(x)))
+            temp_cf_original_classnames = list(temp_cf_original_classnames)
+
 
         surrogate_explainer.fit(X_train, y_train)
+        print('\n'*3)
+        print('$'*50)
+        print(X_train.shape)
+        print(len(y_train))
+        print('$'*50)
+        print('\n'*3)
         print('base estimator:\n', surrogate_explainer)
         print()
 
         graph_string = export_graphviz(surrogate_explainer, feature_names=list(self.columns), max_depth=3, filled=True,
                                        out_file=None,
                                        node_ids=True,
-                                       class_names=self.custom_class_names if 'classification' in self.problem_type else None)
+                                       class_names=temp_cf_original_classnames)
 
         graph = Source(graph_string)
 
@@ -1208,7 +1287,8 @@ class Explainer:
         svg_filename = os.path.join("Decision Tree", 'dtree_structure_{}.svg'.format(self.response_var))
         with open(svg_filename, 'wb') as f:
             f.write(svg_data)
-
+        self.custom_data.to_csv('Customised_Data.csv',index=False)
+        print(self.custom_data)
         html_explanation, self.filter_dict = ExplainTree(svg_filename, self.custom_data,
                                                 self.data_disp, self.problem_type, self.frequency_map, top_n, total_samples=X_train.shape[0]).explain()
 
